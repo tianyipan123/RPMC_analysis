@@ -78,7 +78,7 @@ def get_tickers_spec(ticker_list: List[str], spec_type: str, days: int) -> \
     Pre-condition: spec_type in ["Open"]
     """
     # Note that if Chinese stocks are involved there will be NaN appear because
-    # of different timezones. Hence I dropna() to remove such irregularity.
+    # of different timezones. Hence, I dropna() to remove such irregularity.
     # One has to check the shape of the DataFrame received before usage.
     valid_list = ["Open", "High", "Low", "Close", "Adj Close", "Volume"]
     if spec_type not in valid_list:
