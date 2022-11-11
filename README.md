@@ -12,6 +12,10 @@ portfolio holdings.
 yahoo finance, from intraday to yearly data.
 - `technical_indicator.py` includes various common technical indicators in equity
 market to facilitate data analysis and portfolio management.
+- `kpi.py` comprises several key performance indicator calculations
+to measure the holistic performance of given portfolio.
+
+> Sample uses of these functions are given in `__main__` of each file.
 
 ### Dependency
 - Python = 3.7
