@@ -11,7 +11,7 @@ def get_intra_stock(ticker: str, days: int) -> (pd.DataFrame, bool):
     """
     end_time = datetime.datetime.today()
     start_time = end_time - datetime.timedelta(days)
-    df = yf.download(ticker, start=start_time, end=end_time, interval="5m")
+    df = yf.download(ticker, start=start_time, end=end_time, interval="5m", progress=False)
     if df.notnull().all().all():
         return df, True
     return df.dropna(), False
@@ -23,7 +23,7 @@ def get_daily_stock(ticker: str, days: int) -> (pd.DataFrame, bool):
     """
     end_time = datetime.datetime.today()
     start_time = end_time - datetime.timedelta(days)
-    df = yf.download(ticker, start=start_time, end=end_time, interval="1d")
+    df = yf.download(ticker, start=start_time, end=end_time, interval="1d", progress=False)
     if df.notnull().all().all():
         return df, True
     return df.dropna(), False
@@ -36,7 +36,7 @@ def get_monthly_stock(ticker: str, months: int) -> (pd.DataFrame, bool):
     """
     end_time = datetime.datetime.today()
     start_time = end_time - datetime.timedelta(months * 30)
-    df = yf.download(ticker, start=start_time, end=end_time, interval="1d")
+    df = yf.download(ticker, start=start_time, end=end_time, interval="1d", progress=False)
     if df.notnull().all().all():
         return df, True
     return df.dropna(), False
@@ -51,7 +51,7 @@ def get_year_stock(ticker: str, year: int) -> (pd.DataFrame, bool):
     # will not loss information at all
     end_time = datetime.datetime.today()
     start_time = end_time - datetime.timedelta(year * 365)
-    df = yf.download(ticker, start=start_time, end=end_time, interval="1mo")
+    df = yf.download(ticker, start=start_time, end=end_time, interval="1mo", progress=False)
     if df.notnull().all().all():
         return df, True
     return df.dropna(), False
