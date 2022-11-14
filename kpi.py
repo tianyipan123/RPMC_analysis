@@ -14,6 +14,11 @@ def cagr(DF: pd.DataFrame, spec: str = "Adj Close") -> (float, pd.DataFrame):
     return CAGR, df[["return"]]
 
 
+def cagr_series(ds: pd.Series) -> float:
+    n = len(ds) / 252
+    return (ds.iloc[-1] / ds.iloc[0]) ** (1 / n) - 1
+
+
 def volatility(DF: pd.DataFrame, spec: str = "Adj Close") -> float:
     """Measured by standard deviation.
     """
@@ -26,12 +31,22 @@ def volatility(DF: pd.DataFrame, spec: str = "Adj Close") -> float:
     return vol
 
 
+def volatility_series(ds: pd.Series) -> float:
+    stock_return = ds.pct_change()
+    vol = stock_return.std() * np.sqrt(252)
+    return vol
+
+
 def sharpe(DF: pd.DataFrame, spec: str = "Adj Close", rf: float = 0.04) -> float:
     """Sharpe Ratio.
     """
     # Note: >1: good, >2: very good, >3: excellent
     df = DF.copy()
     return (cagr(df, spec)[0] - rf) / volatility(df)
+
+
+def sharpe_series(ds: pd.Series, rf: float = 0.04) -> float:
+    return (cagr_series(ds) - rf) / volatility_series(ds)
 
 
 def sortino(DF: pd.DataFrame, spec: str = "Adj Close", rf: float = 0.04) -> float:
@@ -46,6 +61,13 @@ def sortino(DF: pd.DataFrame, spec: str = "Adj Close", rf: float = 0.04) -> floa
     return (cagr(df, spec)[0] - rf) / neg_vol
 
 
+def sortino_series(ds: pd.Series, rf: float = 0.04) -> float:
+    stock_return = ds.pct_change()
+    neg_return = np.where(stock_return > 0, 0, stock_return)
+    neg_vol = pd.Series(neg_return[neg_return != 0]).std()
+    return neg_vol
+
+
 def max_dd(DF: pd.DataFrame, spec: str = "Adj Close") -> float:
     """Maximum Drawdown.
     the largest percent drop in asset price.
@@ -57,10 +79,19 @@ def max_dd(DF: pd.DataFrame, spec: str = "Adj Close") -> float:
     return (1 - df[spec] / df["cum_max"]).max()
 
 
+def max_dd_series(ds: pd.Series) -> float:
+    cum_max = ds.cummax()
+    return (1 - ds / cum_max).max()
+
+
 def calmar(DF: pd.DataFrame, spec: str = "Adj Close") -> float:
     """Calmar Ratio. Measure of risk-adjusted return.
     """
     return cagr(DF, spec)[0] / max_dd(DF, spec)
+
+
+def calmar_series(ds: pd.Series) -> float:
+    return cagr_series(ds) / max_dd_series(ds)
 
 
 if __name__ == "__main__":

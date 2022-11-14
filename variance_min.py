@@ -2,7 +2,8 @@ import pandas as pd
 import numpy as np
 import stock_extraction as se
 import technical_indicator as ti
-import kpi as kpi
+import kpi
+from scipy.optimize import minimize, LinearConstraint
 
 #%% Data cleaning
 # SPTSX
@@ -45,7 +46,8 @@ non_trackable = [
 "BRK.B",	"CBS",	"CELG",	"CERN",	"COG",	"CTL",	"CXO",	"DISCA",
 "DISCK",	"ETFC",  "FLIR",	"HFC",	"INFO",	"JEC",	"KSU",
 "LB",	"MXIM",	"MYL",	"NBL",	"PBCT",	"RTN",	"STI",	"SYMC",
-"TIF",	"UTX",	"VAR",	"VIAB",	"WCG",	"WLTW",	"XEC",	"XLNX"
+"TIF",	"UTX",	"VAR",	"VIAB",	"WCG",	"WLTW",	"XEC",	"XLNX",
+"T" # T in yfinance seems to represent Telus rather than AT&T
 ]
 spx_df.drop(non_trackable, inplace=True)
 
@@ -60,10 +62,90 @@ etf_df = etf_df.set_index("RPM Ticker")
 non_trackable = ["XCB", "XGB", "XSB", "IEMG.K", "XIC", "XIU"]
 etf_df.drop(non_trackable, inplace=True)
 
-#%% Industries
+#%% Industries Count
 sptsx_df.drop(["Bloom.Berg Ticker"], inplace=True, axis=1)
 # industries = sptsx_df["GICS Sector\n"].unique()
 df1 = sptsx_df.groupby(["GICS Sector\n"]).count()
 spx_df.drop(["Bloom.B-USerg Ticker"], inplace=True, axis=1)
 df2 = spx_df.groupby("GICS Sector\n").count()
-df = df1 + df2
+
+industry_df = df1 + df2
+industry_list = list(industry_df.index)
+
+#%% Divide proportion
+stock_num = 100
+stock_df = pd.concat([sptsx_df, spx_df])
+stock_df = stock_df.reset_index()
+sharpe_dict = {}
+target = {}
+for ind in industry_df.index:
+    ticker_list = list(stock_df["index"][stock_df["GICS Sector\n"] == ind])
+    pos = []
+    target_list = []
+    for ticker in ticker_list:
+        stock_price, _ = se.get_daily_stock(ticker, 200)
+        sharpe = 0
+        try:
+            sharpe = kpi.sharpe(stock_price)
+        except Exception:
+            print(ticker)
+        if sharpe > 0:
+            pos.append(sharpe)
+            target_list.append(ticker)
+    # rank stocks based on Sharpe Ratio
+    target_list = np.array(target_list)
+    target_list = target_list[np.argsort(pos)[::-1]]
+    sharpe_dict[ind] = np.mean(pos)
+    target[ind] = target_list
+# allocate
+sharpe_mean = pd.DataFrame.from_dict(sharpe_dict, orient="index")
+allocation = (stock_num * sharpe_mean / np.sum(sharpe_mean.values)).round().astype(int)
+if allocation[0]["Telecommunication Services"] > 4:
+    available = allocation[0]["Telecommunication Services"] - 4
+    r = np.random.randint(0, 11, available)
+    for i in r:
+        allocation.iloc[i] += 1
+    allocation[0]["Telecommunication Services"] = 4
+allocation.columns = ["allocation"]
+# industry_df = pd.concat([industry_df, allocation], axis=1)
+
+#%% Select stocks
+for i in range(11):
+    ind = industry_list[i]
+    quota = allocation.loc[ind, "allocation"]
+    ticker_list = target[ind]
+    if quota > len(ticker_list):
+        allocation.loc[ind] = quota
+    else:
+        target[ind] = ticker_list[:quota]
+
+#%% Optimize Weight
+stock_price = se.get_tickers_spec(list(stock_df.index), "Adj Close", 200)
+
+
+def sharpe_portfolio(weight: list) -> float:
+    """Weight the stock price in the dataframe and get sharpe ratio.
+
+    Precondition: len(stock_price.columns) == len(weight)
+    """
+    time_series = stock_price.dot(weight)
+    time_series = pd.Series(time_series)
+    assert isinstance(time_series, pd.Series)
+    return -1 * kpi.sharpe_series(time_series)
+
+
+ticker_num = len(stock_price.columns)
+x0 = np.ones(ticker_num) / ticker_num
+
+cons = (
+    {"type": "eq",
+     "fun": lambda x: np.sum(x) - 1,
+     "jac": lambda x: np.ones(len(x))},
+    LinearConstraint(np.identity(len(x0)), lb=0, ub=1)
+)
+
+res = minimize(sharpe_portfolio, x0, constraints=cons)
+x = res.x
+x = np.where(x > 1e-3, x, 0)
+x = x / np.sum(x)
+sharpe_portfolio(x)

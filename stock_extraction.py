@@ -75,7 +75,8 @@ def get_tickers_spec(ticker_list: List[str], spec_type: str, days: int) -> \
     """Get daily data for each valid ticker in ticker_list with spec.
     Return the dataframe and whether if it contains NaN.
 
-    Pre-condition: spec_type in ["Open"]
+    Pre-condition: spec_type in ["Open", "High", "Low", "Close",
+                                 "Adj Close", "Volume"]
     """
     # Note that if Chinese stocks are involved there will be NaN appear because
     # of different timezones. Hence, I dropna() to remove such irregularity.
