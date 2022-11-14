@@ -1,7 +1,6 @@
 import pandas as pd
 import numpy as np
 import stock_extraction as se
-import technical_indicator as ti
 import kpi
 from scipy.optimize import minimize, LinearConstraint
 
@@ -32,6 +31,7 @@ non_trackable = [
 "TOY",	"TSGI",	"WCP",	"WDO",	"WFT",	"WJA",	"WN",	"WPK",
 "WSP",	"WTE",	"YRI"]
 sptsx_df.drop(non_trackable, inplace=True)
+sptsx_list = list(sptsx_df.index)
 
 # SPX
 spx_df = pd.read_excel("tradable_list.xlsx", sheet_name="SPX")
@@ -40,6 +40,7 @@ spx_df = spx_df.iloc[1:]
 spx_df.columns = header
 spx_df["RPM-USTicker"] = [ticker.split('-')[0] for ticker in spx_df["RPM-USTicker"]]
 spx_df = spx_df.set_index("RPM-USTicker")
+spx_list = list(spx_df.index)
 
 non_trackable = [
 "ADS",	"AGN",	"ALXN",	"ANTM",	"BBT",	"BF.B",	"BHGE",	"BLL",
@@ -107,9 +108,10 @@ if allocation[0]["Telecommunication Services"] > 4:
         allocation.iloc[i] += 1
     allocation[0]["Telecommunication Services"] = 4
 allocation.columns = ["allocation"]
-# industry_df = pd.concat([industry_df, allocation], axis=1)
+industry_df = pd.concat([industry_df, allocation], axis=1)
 
 #%% Select stocks
+money = 1000000
 for i in range(11):
     ind = industry_list[i]
     quota = allocation.loc[ind, "allocation"]
@@ -118,9 +120,10 @@ for i in range(11):
         allocation.loc[ind] = quota
     else:
         target[ind] = ticker_list[:quota]
+industry_df["money"] = money * industry_df["allocation"] / np.sum(industry_df["allocation"])
 
 #%% Optimize Weight
-stock_price = se.get_tickers_spec(list(stock_df.index), "Adj Close", 200)
+# stock_price = se.get_tickers_spec(list(stock_df.index), "Adj Close", 200)
 
 
 def sharpe_portfolio(weight: list) -> float:
@@ -128,24 +131,54 @@ def sharpe_portfolio(weight: list) -> float:
 
     Precondition: len(stock_price.columns) == len(weight)
     """
-    time_series = stock_price.dot(weight)
+    time_series = stock_prices.dot(weight)
     time_series = pd.Series(time_series)
     assert isinstance(time_series, pd.Series)
-    return -1 * kpi.sharpe_series(time_series)
+    return kpi.sharpe_series(time_series)
 
 
-ticker_num = len(stock_price.columns)
-x0 = np.ones(ticker_num) / ticker_num
+def optimize_weight(stock_prices: pd.DataFrame, outlay: float) -> np.array:
+    """Produce the optimal amount of stocks given stock price and outlay
+     using scipy.optimize.
+    """
+    ticker_num = len(stock_prices.columns)
+    w0 = np.ones(ticker_num) / ticker_num
 
-cons = (
-    {"type": "eq",
-     "fun": lambda x: np.sum(x) - 1,
-     "jac": lambda x: np.ones(len(x))},
-    LinearConstraint(np.identity(len(x0)), lb=0, ub=1)
-)
+    cons = (
+        {"type": "eq",
+         "fun": lambda x: np.sum(x) - 1,
+         "jac": lambda x: np.ones(len(x))},
+        LinearConstraint(np.identity(len(w0)), lb=0, ub=1)
+    )
 
-res = minimize(sharpe_portfolio, x0, constraints=cons)
-x = res.x
-x = np.where(x > 1e-3, x, 0)
-x = x / np.sum(x)
-sharpe_portfolio(x)
+    res = minimize(lambda w: -1 * sharpe_portfolio(w), w0, constraints=cons)
+    # 1 iteration
+    res = minimize(lambda w: -1 * sharpe_portfolio(w), res.x, constraints=cons)
+    w = res.x
+    basket = stock_prices.iloc[-1].dot(w)
+    quantity = (outlay / basket * w).round()
+    print(sharpe_portfolio(quantity))
+    return quantity
+
+
+holding = []
+for i in range(11):
+    ind = industry_list[i]
+    tickers = target[ind]
+    stock_prices = se.get_tickers_spec(tickers, "Adj Close", 100)
+    weight = optimize_weight(stock_prices, industry_df["money"][ind])
+    holding.append(pd.Series(weight, index=tickers, dtype=int))
+holding = pd.concat(holding)
+holding = pd.DataFrame(holding[holding != 0])
+holding = holding.reset_index()
+location = []
+for i in range(len(holding.index)):
+    ticker = holding.iloc[i]["index"]
+    if ticker in sptsx_list:
+        location.append("CA")
+    elif ticker in spx_list:
+        location.append("US")
+    else:
+        location.append(np.nan)
+holding["location"] = location
+holding.to_excel("temp.xlsx")

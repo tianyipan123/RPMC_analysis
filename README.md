@@ -14,7 +14,10 @@ yahoo finance, from intraday to yearly data.
 market to facilitate data analysis and portfolio management.
 - `kpi.py` comprises several key performance indicator calculations
 to measure the holistic performance of given portfolio.
-
+- `tradable_list.xlsx` includes the tradable stocks for the platform.
+- `variance_min.py` implements the process of calculating allocations that 
+will minimize the Sharpe ratio across stocks in the tradable list.
+- `temp.xlsx` stores the output holdings calculated from `variance_min.py`.
 > Sample uses of these functions are given in `__main__` of each file.
 
 ### Dependency
@@ -24,4 +27,4 @@ to measure the holistic performance of given portfolio.
 - pandas = 1.3.5
 - matplotlib = 3.5.1
 
-**Note**: Higher versions of these packages might work well on this project, but is not guaranteed.
+**Note**: Higher versions of these packages might work well on this project, but are not guaranteed.
