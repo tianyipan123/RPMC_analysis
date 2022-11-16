@@ -42,7 +42,7 @@ def sharpe(DF: pd.DataFrame, spec: str = "Adj Close", rf: float = 0.04) -> float
     """
     # Note: >1: good, >2: very good, >3: excellent
     df = DF.copy()
-    return (cagr(df, spec)[0] - rf) / volatility(df)
+    return (cagr(df, spec)[0] - rf) / volatility(df, spec)
 
 
 def sharpe_series(ds: pd.Series, rf: float = 0.04) -> float:
