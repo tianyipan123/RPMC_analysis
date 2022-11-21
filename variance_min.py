@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 import stock_extraction as se
 import kpi
-from scipy.optimize import minimize, LinearConstraint
+from scipy.optimize import minimize, NonlinearConstraint, Bounds
 
 #%% Data cleaning
 # SPTSX
@@ -29,7 +29,9 @@ non_trackable = [
 "PXT",	"QBR.B",	"RCH",	"RCI.B",	"REI.UT",	"RUS",	"SIA",	"SJR.B",
 "SMF",	"SMU.UT",	"SNC",	"SRU.UT",	"TCL.A",	"TECK.B",	"TIH",	"TOU",
 "TOY",	"TSGI",	"WCP",	"WDO",	"WFT",	"WJA",	"WN",	"WPK",
-"WSP",	"WTE",	"YRI"]
+"WSP",	"WTE",	"YRI",
+"MTL" # this stock gives constnat stock price
+]
 sptsx_df.drop(non_trackable, inplace=True)
 sptsx_list = list(sptsx_df.index)
 
@@ -48,7 +50,8 @@ non_trackable = [
 "DISCK",	"ETFC",  "FLIR",	"HFC",	"INFO",	"JEC",	"KSU",
 "LB",	"MXIM",	"MYL",	"NBL",	"PBCT",	"RTN",	"STI",	"SYMC",
 "TIF",	"UTX",	"VAR",	"VIAB",	"WCG",	"WLTW",	"XEC",	"XLNX",
-"T" # T in yfinance seems to represent Telus rather than AT&T
+"T", # T in yfinance seems to represent Telus rather than AT&T
+"NLSN", "TWTR" # no lastest data available
 ]
 spx_df.drop(non_trackable, inplace=True)
 
@@ -84,11 +87,9 @@ for ind in industry_df.index:
     pos = []
     target_list = []
     for ticker in ticker_list:
-        stock_price, _ = se.get_daily_stock(ticker, 200)
-        sharpe = 0
-        try:
-            sharpe = kpi.sharpe(stock_price)
-        except Exception:
+        stock_price, _ = se.get_daily_stock(ticker, 100)
+        sharpe = kpi.sharpe(stock_price)
+        if kpi.volatility(stock_price) == 0:
             print(ticker)
         if sharpe > 0:
             pos.append(sharpe)
@@ -144,16 +145,12 @@ def optimize_weight(stock_prices: pd.DataFrame, outlay: float) -> np.array:
     ticker_num = len(stock_prices.columns)
     w0 = np.ones(ticker_num) / ticker_num
 
-    cons = (
-        {"type": "eq",
-         "fun": lambda x: np.sum(x) - 1,
-         "jac": lambda x: np.ones(len(x))},
-        LinearConstraint(np.identity(len(w0)), lb=0, ub=1)
-    )
+    b = Bounds(lb=-0.05, ub=1)
+    cons = NonlinearConstraint(fun=(lambda x: np.sum(x)), lb=1, ub=1)
 
-    res = minimize(lambda w: -1 * sharpe_portfolio(w), w0, constraints=cons)
+    res = minimize(lambda w: -1 * sharpe_portfolio(w), w0, bounds=b, constraints=cons)
     # 1 iteration
-    res = minimize(lambda w: -1 * sharpe_portfolio(w), res.x, constraints=cons)
+    res = minimize(lambda w: -1 * sharpe_portfolio(w), res.x, bounds=b, constraints=cons)
     w = res.x
     basket = stock_prices.iloc[-1].dot(w)
     quantity = (outlay / basket * w).round()
@@ -165,7 +162,7 @@ holding = []
 for i in range(11):
     ind = industry_list[i]
     tickers = target[ind]
-    stock_prices = se.get_tickers_spec(tickers, "Adj Close", 100)
+    stock_prices = se.get_tickers_spec(tickers, "Adj Close", 21)
     weight = optimize_weight(stock_prices, industry_df["money"][ind])
     holding.append(pd.Series(weight, index=tickers, dtype=int))
 holding = pd.concat(holding)
@@ -181,4 +178,5 @@ for i in range(len(holding.index)):
     else:
         location.append(np.nan)
 holding["location"] = location
+holding = holding.rename(columns={0: "amount"})
 holding.to_excel("temp.xlsx")

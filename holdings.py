@@ -13,7 +13,7 @@ df.columns = header
 
 #%% Compute portfolio valuation trend
 tickers = list(df["ticker"])
-stock_prices = se.get_tickers_spec(tickers, "Adj Close", 100)
+stock_prices = se.get_tickers_spec(tickers, "Adj Close", 99)
 weight = df[["amount"]]
 weight.index = stock_prices.columns
 weight["amount"] = weight["amount"].astype(float)

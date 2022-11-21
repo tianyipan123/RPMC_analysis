@@ -10,13 +10,15 @@ def cagr(DF: pd.DataFrame, spec: str = "Adj Close") -> (float, pd.DataFrame):
     df = DF.copy()
     df["return"] = df[spec].pct_change()
     n = len(df) / 252 # change the denominator if the time interval is not daily
-    CAGR = (df[spec][-1] / df[spec][0]) ** (1/n) - 1
+    non_zero = df[spec].to_numpy().nonzero()[0]
+    CAGR = (df[spec][non_zero[-1]] / df[spec][non_zero[0]]) ** (1/n) - 1
     return CAGR, df[["return"]]
 
 
 def cagr_series(ds: pd.Series) -> float:
     n = len(ds) / 252
-    return (ds.iloc[-1] / ds.iloc[0]) ** (1 / n) - 1
+    non_zero = ds.to_numpy().nonzero()[0]
+    return (ds.iloc[non_zero[-1]] / ds.iloc[non_zero[0]]) ** (1 / n) - 1
 
 
 def volatility(DF: pd.DataFrame, spec: str = "Adj Close") -> float:
