@@ -145,7 +145,7 @@ def optimize_weight(stock_prices: pd.DataFrame, outlay: float) -> np.array:
     ticker_num = len(stock_prices.columns)
     w0 = np.ones(ticker_num) / ticker_num
 
-    b = Bounds(lb=-0.05, ub=1)
+    b = Bounds(lb=0, ub=1)
     cons = NonlinearConstraint(fun=(lambda x: np.sum(x)), lb=1, ub=1)
 
     res = minimize(lambda w: -1 * sharpe_portfolio(w), w0, bounds=b, constraints=cons)
@@ -179,4 +179,13 @@ for i in range(len(holding.index)):
         location.append(np.nan)
 holding["location"] = location
 holding = holding.rename(columns={0: "amount"})
-holding.to_excel("temp.xlsx")
+
+#%% Save Results to Basket
+basket = pd.DataFrame(holding["index"] + "-" + holding["location"], columns=["Ticker"])
+basket["Buy/Sell"] = np.where(holding["amount"] > 0, "Buy", "Sell")
+basket["Quantity"] = holding["amount"].abs()
+basket["Type"] = "MKT"
+writer = pd.ExcelWriter("temp.xlsx")
+basket.to_excel(writer, sheet_name="buy", index=False)
+holding.to_excel(writer, sheet_name="holding", index=False)
+writer.save()
