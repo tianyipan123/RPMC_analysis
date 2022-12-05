@@ -133,7 +133,7 @@ industry_df = pd.concat([industry_df, allocation], axis=1)
 gc.collect()
 
 #%% Select stocks
-money = 1000000
+money = 900000
 for i in range(11):
     ind = industry_list[i]
     quota = allocation.loc[ind, "allocation"]
@@ -203,7 +203,7 @@ holding["location"] = location
 holding = holding.rename(columns={0: "amount", "index": "ticker"})
 
 #%% Save Results to Basket
-basket = pd.DataFrame(holding["index"] + "-" + holding["location"], columns=["Ticker"])
+basket = pd.DataFrame(holding["ticker"] + "-" + holding["location"], columns=["Ticker"])
 basket["Buy/Sell"] = np.where(holding["amount"] > 0, "Buy", "Sell")
 basket["Quantity"] = holding["amount"].abs()
 basket["Type"] = "MKT"
