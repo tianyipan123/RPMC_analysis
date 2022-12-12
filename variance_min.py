@@ -133,7 +133,7 @@ industry_df = pd.concat([industry_df, allocation], axis=1)
 gc.collect()
 
 #%% Select stocks
-money = 900000
+money = 800000
 for i in range(11):
     ind = industry_list[i]
     quota = allocation.loc[ind, "allocation"]
