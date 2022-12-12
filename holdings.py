@@ -3,6 +3,7 @@ import stock_extraction as se
 import matplotlib.pyplot as plt
 import kpi
 from datetime import date
+pd.options.mode.chained_assignment = None
 
 #%% Fetch holdings
 url = "https://docs.google.com/spreadsheets/d/1hS4vtC7ekVef1fdf1KDb7DbemyOiqfgz3OZ62vxrTNM/edit#gid=0"
