@@ -1,13 +1,12 @@
 import pandas as pd
 import numpy as np
-import stock_extraction as se
-import kpi
+from Toolbox import kpi, stock_extraction as se
 from scipy.optimize import minimize, NonlinearConstraint, Bounds
 
 import gc
 import time
 from contextlib import contextmanager
-from tqdm import tqdm, trange
+from tqdm import tqdm
 
 
 @contextmanager
@@ -207,7 +206,7 @@ basket = pd.DataFrame(holding["ticker"] + "-" + holding["location"], columns=["T
 basket["Buy/Sell"] = np.where(holding["amount"] > 0, "Buy", "Sell")
 basket["Quantity"] = holding["amount"].abs()
 basket["Type"] = "MKT"
-writer = pd.ExcelWriter("temp.xlsx")
+writer = pd.ExcelWriter("../Visualizer/temp.xlsx")
 basket.to_excel(writer, sheet_name="buy", index=False)
 holding.to_excel(writer, sheet_name="holding", index=False)
 writer.save()

@@ -1,7 +1,6 @@
 import pandas as pd
-import stock_extraction as se
+from Toolbox import kpi, stock_extraction as se
 import matplotlib.pyplot as plt
-import kpi
 from datetime import date
 pd.options.mode.chained_assignment = None
 
@@ -44,7 +43,7 @@ print("calmar ratio = " + str(calmar))
 fig = plt.figure()
 plt.plot(portfolio)
 fig.autofmt_xdate()
-prediction_path = "prediction/"
+prediction_path = "../prediction/"
 title = str(date.today())
 plt.savefig(prediction_path + title)
 plt.show()
