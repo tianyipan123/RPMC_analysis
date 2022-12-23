@@ -206,7 +206,7 @@ basket = pd.DataFrame(holding["ticker"] + "-" + holding["location"], columns=["T
 basket["Buy/Sell"] = np.where(holding["amount"] > 0, "Buy", "Sell")
 basket["Quantity"] = holding["amount"].abs()
 basket["Type"] = "MKT"
-writer = pd.ExcelWriter("../Visualizer/temp.xlsx")
+writer = pd.ExcelWriter("../temp.xlsx")
 basket.to_excel(writer, sheet_name="buy", index=False)
 holding.to_excel(writer, sheet_name="holding", index=False)
 writer.save()
