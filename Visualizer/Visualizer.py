@@ -1,5 +1,6 @@
 import pandas as pd
-from Toolbox import kpi, stock_extraction as se
+from Toolbox import kpi
+from Toolbox import stock_extraction as se
 import matplotlib.pyplot as plt
 from datetime import date
 pd.options.mode.chained_assignment = None
