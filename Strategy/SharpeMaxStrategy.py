@@ -1,4 +1,4 @@
-from Strategy import Strategy
+from Strategy.Strategy import Strategy as stt
 from DataProcessor.DataLoader import DataLoader
 import pandas as pd
 import numpy as np
@@ -44,7 +44,7 @@ def _optimize_weight(stock_prices: pd.DataFrame, outlay: float) -> np.array:
     return quantity
 
 
-class SharpeMaxStrategy(Strategy):
+class SharpeMaxStrategy(stt):
 
     sharpe_mean: pd.DataFrame
     target: Dict[str, List[str]]
@@ -53,7 +53,7 @@ class SharpeMaxStrategy(Strategy):
     stock_num: int
 
     def __init__(self, dc: DataLoader, money: int, stock_num: int) -> None:
-        Strategy.__init__(self, dc, money)
+        stt.__init__(self, dc, money)
         self.sharpe_mean = pd.DataFrame()
         self.target = {}
         self.industry_list = list(dc.industry_df.index)
