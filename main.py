@@ -19,7 +19,7 @@ def timer(name: str) -> None:
 
 
 #%% Preparation
-money = 1000000
+money = 700000
 dataloader = DataLoader()
 
 with timer(str(dataloader)):
@@ -27,7 +27,7 @@ with timer(str(dataloader)):
     dataloader.count_industry()
 
 #%% Develop Strategy
-strategy = SharpeMaxStrategy(dataloader, money, 100)
+strategy = SharpeMaxStrategy(dataloader, money, 100, 100, 20)
 with timer(str(strategy)):
     strategy.develop_strategy()
 
@@ -39,7 +39,7 @@ with timer(str(protection_buffer)):
 
 #%% Store result
 holding_path = "../holding.xlsx"
-writer = pd.ExcelWriter("../holding.xlsx")
+writer = pd.ExcelWriter(holding_path)
 data_storer = DataStorer(writer)
 with timer(str(data_storer)):
     data_storer.store_buy(strategy.holding)

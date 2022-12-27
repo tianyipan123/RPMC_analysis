@@ -7,12 +7,14 @@ class DataLoader:
     spx_df: pd.DataFrame
     etf_df: pd.DataFrame
     industry_df: pd.DataFrame
+    tradable_path: str
 
     def __init__(self) -> None:
         self.sptsx_df = pd.DataFrame()
         self.spx_df = pd.DataFrame()
         self.etf_df = pd.DataFrame()
         self.industry_df = pd.DataFrame()
+        self.tradable_path = "DataProcessor\\tradable_list.xlsx"
 
     def __str__(self) -> str:
         return "DataLoader is loading"
@@ -23,7 +25,8 @@ class DataLoader:
         self._read_etf()
 
     def _read_sptsx(self) -> None:
-        sptsx_df = pd.read_excel("tradable_list.xlsx", sheet_name="SPTSX")
+        # TODO: add a auto-check system to cope with non-trackable stocks
+        sptsx_df = pd.read_excel(self.tradable_path, sheet_name="SPTSX")
         header = sptsx_df.iloc[0]
         sptsx_df = sptsx_df.iloc[1:]
         sptsx_df.columns = header
@@ -56,7 +59,7 @@ class DataLoader:
         self.sptsx_df = sptsx_df
 
     def _read_spx(self) -> None:
-        spx_df = pd.read_excel("tradable_list.xlsx", sheet_name="SPX")
+        spx_df = pd.read_excel(self.tradable_path, sheet_name="SPX")
         header = spx_df.iloc[0]
         spx_df = spx_df.iloc[1:]
         spx_df.columns = header
@@ -71,13 +74,14 @@ class DataLoader:
             "LB", "MXIM", "MYL", "NBL", "PBCT", "RTN", "STI", "SYMC",
             "TIF", "UTX", "VAR", "VIAB", "WCG", "WLTW", "XEC", "XLNX",
             "T",  # T in yfinance seems to represent Telus rather than AT&T
-            "NLSN", "TWTR", "CTXS"  # no lastest data available
+            "NLSN", "TWTR", "CTXS",  # no lastest data available
         ]
         spx_df.drop(non_trackable, inplace=True)
+        spx_df.drop(["Bloom.B-USerg Ticker"], inplace=True, axis=1)
         self.spx_df = spx_df
 
     def _read_etf(self) -> None:
-        etf_df = pd.read_excel("tradable_list.xlsx", sheet_name="ETFs")
+        etf_df = pd.read_excel(self.tradable_path, sheet_name="ETFs")
         header = etf_df.iloc[0]
         etf_df = etf_df.iloc[1:]
         etf_df.columns = header

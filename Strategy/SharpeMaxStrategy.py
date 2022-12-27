@@ -49,16 +49,20 @@ class SharpeMaxStrategy(stt):
     sharpe_mean: pd.DataFrame
     target: Dict[str, List[str]]
     industry_list: List[str]
-    industry_allocation: pd.DataFrame
     stock_num: int
+    selection_filter: int
+    optimization_filter: int
 
-    def __init__(self, dc: DataLoader, money: int, stock_num: int) -> None:
+    def __init__(self, dc: DataLoader, money: int, stock_num: int,
+                 selection_filter: int, optimization_filter: int) -> None:
         stt.__init__(self, dc, money)
         self.sharpe_mean = pd.DataFrame()
         self.target = {}
         self.industry_list = list(dc.industry_df.index)
-        self.industry_allocation = pd.DataFrame()
         self.stock_num = stock_num
+        self.selection_filter = selection_filter
+        self.optimization_filter = optimization_filter
+
 
     def __str__(self) -> str:
         return "Strategy: Maximize Sharpe Ratio"
@@ -74,18 +78,20 @@ class SharpeMaxStrategy(stt):
         stock_df = stock_df.reset_index()
         sharpe_dict = {}
         target = {}
+        sel_filter = self.selection_filter
 
         for ind in tqdm(self.industry_list):
             tickers_list = list(
-                stock_df["index"][stock_df["GICS Sector\n"] == ind])
+                stock_df["index"][stock_df["GICS Sector\n"] == ind]
+            )
             pos = []
             target_list = []
             for ticker in tickers_list:
-                stock_price, _ = se.get_daily_stock(ticker, 100)
+                stock_price, success = se.get_daily_stock(ticker, sel_filter)
                 sharpe = kpi.sharpe(stock_price)
                 if kpi.volatility(stock_price) == 0:
                     print(ticker)
-                if sharpe > 0:
+                if sharpe > 0 and success:
                     pos.append(sharpe)
                     target_list.append(ticker)
             # rank stocks based on Sharpe Ratio
@@ -116,16 +122,15 @@ class SharpeMaxStrategy(stt):
 
     def _impose_quota(self) -> None:
         # Prologue
-        allocation = self.industry_allocation
         target = self.target
         industry_df = self.dataloader.industry_df
         # Body
         for i in range(11):
             ind = self.industry_list[i]
-            quota = allocation.loc[ind, "allocation"]
+            quota = industry_df.loc[ind, "allocation"]
             ticker_list = self.target[ind]
             if quota > len(ticker_list):
-                allocation.loc[ind] = quota
+                industry_df.loc[ind, "allocation"] = quota
             else:
                 target[ind] = ticker_list[:quota]
         industry_df["money"] = self.money * industry_df["allocation"] / np.sum(
@@ -133,14 +138,17 @@ class SharpeMaxStrategy(stt):
         # Epilogue
         self.dataloader.industry_df = industry_df
         self.target = target
-        self.industry_allocation = allocation
 
     def _decide_stock_quantity(self) -> None:
         holding = []
+        opt_filter = self.optimization_filter
+
         for ind in tqdm(self.industry_list):
             print("current industry is " + ind)
             tickers = self.target[ind]
-            stock_prices = se.get_tickers_spec(tickers, "Adj Close", 21)
+            stock_prices = se.get_tickers_spec(tickers, "Adj Close",
+                                               self.selection_filter // 2)
+            stock_prices = stock_prices[-self.optimization_filter:]
             weight = _optimize_weight(
                 stock_prices, self.dataloader.industry_df["money"][ind])
             holding.append(pd.Series(weight, index=tickers, dtype=int))
