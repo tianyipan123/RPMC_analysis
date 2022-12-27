@@ -20,11 +20,12 @@ class Visualizer:
         self.portfolio = pd.DataFrame()
 
     def fetch_holding(self) -> None:
-        df = pd.read_csv(self.url)
-        header = df.iloc[0]
-        df = df[1:]
-        df.columns = header
-        df["amount"] = df["amount"].astype(int)
+        holding = pd.read_csv(self.url)
+        header = holding.iloc[0]
+        holding = holding[1:]
+        holding.columns = header
+        holding["amount"] = holding["amount"].astype(int)
+        self.holding = holding
 
     def summarize_kpi(self) -> None:
         tickers = list(self.holding["ticker"])
@@ -39,23 +40,26 @@ class Visualizer:
         sortino = kpi.sortino(portfolio, "amount")
         max_dd = kpi.max_dd(portfolio, "amount")
         calmar = kpi.calmar(portfolio, "amount")
-
-        kpi_df = pd.DataFrame([cagr, sharpe, sortino, max_dd, calmar],
-                              columns=["KPI"], index=["cagr", "Sharpe Ratio",
-                                                      "Sortino Ratio",
-                                                      "Maximum Drawdown",
-                                                      "Calmar Ratio"])
+        # print result to console
         print("cagr = " + str(cagr))
         print("sharpe ratio = " + str(sharpe))
         print("sortino ratio = " + str(sortino))
         print("maximum drawdown = " + str(max_dd))
         print("calmar ratio = " + str(calmar))
+        # save results
+        self.kpi_df = pd.DataFrame([cagr, sharpe, sortino, max_dd, calmar],
+                                   columns=["KPI"],
+                                   index=["cagr", "Sharpe Ratio",
+                                          "Sortino Ratio",
+                                          "Maximum Drawdown",
+                                          "Calmar Ratio"])
+        self.portfolio = portfolio
 
     def visualize(self) -> None:
         fig = plt.figure()
         plt.plot(self.portfolio)
         fig.autofmt_xdate()
-        prediction_path = "../prediction/"
+        prediction_path = "/prediction/"
         title = str(date.today())
         plt.savefig(prediction_path + title)
         plt.show()

@@ -38,7 +38,7 @@ with timer(str(protection_buffer)):
     buffer = protection_buffer.create_buffer(strategy.holding)
 
 #%% Store result
-holding_path = "../holding.xlsx"
+holding_path = "holding.xlsx"
 writer = pd.ExcelWriter(holding_path)
 data_storer = DataStorer(writer)
 with timer(str(data_storer)):
