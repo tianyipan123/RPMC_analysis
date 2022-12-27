@@ -2,7 +2,17 @@ import pandas as pd
 
 
 class DataLoader:
+    """Load trade data and perform elementary processes for further
+    investigation in data.
 
+    === Attributes ===
+    sptsx_df: tradable tickers with sector information in SPTSX
+    spx_df: tradable tickers with sector information in SPX
+    etf_df: tradable tickers for ETFs with sector information
+    industry_df: industry statistic for tickers in SPTSX and SPX
+    tradable_path: file path for tradable stock information
+    """
+    # Attribute Types
     sptsx_df: pd.DataFrame
     spx_df: pd.DataFrame
     etf_df: pd.DataFrame
@@ -10,22 +20,31 @@ class DataLoader:
     tradable_path: str
 
     def __init__(self) -> None:
+        """Initializer to DataLoader.
+        """
         self.sptsx_df = pd.DataFrame()
         self.spx_df = pd.DataFrame()
         self.etf_df = pd.DataFrame()
         self.industry_df = pd.DataFrame()
-        self.tradable_path = "DataProcessor\\tradable_list.xlsx"
+        self.tradable_path = "DataProcessor/tradable_list.xlsx"
 
     def __str__(self) -> str:
+        """String representation of DataLoader.
+        """
         return "DataLoader is loading"
 
     def read_data(self) -> None:
+        """Read SPTSX, SPX, and ETF information from tradable_path.
+        """
         self._read_sptsx()
         self._read_spx()
         self._read_etf()
 
     def _read_sptsx(self) -> None:
+        """Read SPTSX data from tradable_path and store results in sptsx_df.
+        """
         # TODO: add a auto-check system to cope with non-trackable stocks
+        # setup
         sptsx_df = pd.read_excel(self.tradable_path, sheet_name="SPTSX")
         header = sptsx_df.iloc[0]
         sptsx_df = sptsx_df.iloc[1:]
@@ -34,6 +53,7 @@ class DataLoader:
                                   sptsx_df["RPM Ticker"]]
         sptsx_df = sptsx_df.set_index("RPM Ticker")
 
+        # remove non_trackable tickers
         non_trackable = [
             "ABX", "ACO.X", "AD", "AFN", "ALA", "AP.UT", "APHA", "ARX",
             "ATD", "ATZ", "AX.UT", "BAM.A", "BBD.B", "BBU.UT", "BCB", "BEI.UT",
@@ -55,10 +75,14 @@ class DataLoader:
             "MTL"  # this stock gives constnat stock price
         ]
         sptsx_df.drop(non_trackable, inplace=True)
+        # drop unused information
         sptsx_df.drop(["Bloom.Berg Ticker"], inplace=True, axis=1)
         self.sptsx_df = sptsx_df
 
     def _read_spx(self) -> None:
+        """Read SPX data from tradable_path and store results in spx_df.
+        """
+        # setup
         spx_df = pd.read_excel(self.tradable_path, sheet_name="SPX")
         header = spx_df.iloc[0]
         spx_df = spx_df.iloc[1:]
@@ -67,6 +91,7 @@ class DataLoader:
                                   spx_df["RPM-USTicker"]]
         spx_df = spx_df.set_index("RPM-USTicker")
 
+        # remove non_trackable tickers
         non_trackable = [
             "ADS", "AGN", "ALXN", "ANTM", "BBT", "BF.B", "BHGE", "BLL",
             "BRK.B", "CBS", "CELG", "CERN", "COG", "CTL", "CXO", "DISCA",
@@ -77,10 +102,15 @@ class DataLoader:
             "NLSN", "TWTR", "CTXS",  # no lastest data available
         ]
         spx_df.drop(non_trackable, inplace=True)
+
+        # remove unused information
         spx_df.drop(["Bloom.B-USerg Ticker"], inplace=True, axis=1)
         self.spx_df = spx_df
 
     def _read_etf(self) -> None:
+        """Read ETF data from tradable_path and store results in etf_df.
+        """
+        # setup
         etf_df = pd.read_excel(self.tradable_path, sheet_name="ETFs")
         header = etf_df.iloc[0]
         etf_df = etf_df.iloc[1:]
@@ -89,11 +119,18 @@ class DataLoader:
                                 etf_df["RPM Ticker"]]
         etf_df = etf_df.set_index("RPM Ticker")
 
+        # remove non_trackable information
         non_trackable = ["XCB", "XGB", "XSB", "IEMG.K", "XIC", "XIU"]
         etf_df.drop(non_trackable, inplace=True)
+        # save result
         self.etf_df = etf_df
 
     def count_industry(self) -> None:
+        """Count how many stocks are in each industry and store the results
+        in industry_df.
+        """
+        # group stocks by industry types
         df1 = self.sptsx_df.groupby(["GICS Sector\n"]).count()
         df2 = self.spx_df.groupby("GICS Sector\n").count()
+        # save results
         self.industry_df = df1 + df2
