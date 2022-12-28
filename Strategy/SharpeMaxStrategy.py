@@ -179,13 +179,13 @@ class SharpeMaxStrategy(Stt):
     def _decide_stock_quantity(self) -> None:
         # setup
         holding = []
-        opt_filter = self.optimization_filter
         # optimize the weight of stocks inside each industry
         for ind in tqdm(self.industry_list):
             print("current industry is " + ind)
             tickers = self.target[ind]
+            # TODO: unstable parameter self.selection_filter // 3
             stock_prices = se.get_tickers_spec(tickers, "Adj Close",
-                                               self.selection_filter // 2)
+                                               self.selection_filter // 3)
             stock_prices = stock_prices[-self.optimization_filter:]
             weight = _optimize_weight(
                 stock_prices, self.dataloader.industry_df["money"][ind])
