@@ -83,7 +83,7 @@ class Visualizer:
         plt.plot(self.portfolio)
         fig.autofmt_xdate()
         # save plot
-        prediction_path = "/prediction/"
+        prediction_path = "prediction/"
         title = str(date.today())
         plt.savefig(prediction_path + title)
         plt.show()
