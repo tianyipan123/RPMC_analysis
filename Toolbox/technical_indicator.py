@@ -1,5 +1,5 @@
 import pandas as pd
-import stock_extraction as se
+from Toolbox import stock_extraction as se
 import numpy as np
 import matplotlib.pyplot as plt
 

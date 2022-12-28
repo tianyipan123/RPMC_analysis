@@ -21,6 +21,7 @@ def get_daily_stock(ticker: str, days: int) -> (pd.DataFrame, bool):
     """Get daily data.
     Return the dataframe and whether if it contains NaN.
     """
+    # TODO: relax the condition of being a potential valid stock to choose
     end_time = datetime.datetime.today()
     start_time = end_time - datetime.timedelta(days)
     df = yf.download(ticker, start=start_time, end=end_time, interval="1d", progress=False)
