@@ -31,7 +31,7 @@ class DataLoader:
     def __str__(self) -> str:
         """String representation of DataLoader.
         """
-        return "DataLoader is loading"
+        return "Loading Data"
 
     def read_data(self) -> None:
         """Read SPTSX, SPX, and ETF information from tradable_path.

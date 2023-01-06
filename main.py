@@ -5,7 +5,7 @@ from contextlib import contextmanager
 from DataProcessor.DataLoader import DataLoader
 from DataProcessor.DataStorer import DataStorer
 from Strategy.SharpeMaxStrategy import SharpeMaxStrategy
-from ProtectionBuffer.StopOrderBuffer import StopOrderBuffer
+from ProtectionBuffer.FullStopOrderBuffer import FullStopOrderBuffer
 from Visualizer.Visualizer import Visualizer
 
 
@@ -33,7 +33,7 @@ with timer(str(strategy)):
 
 #%% Add Buffer
 # TODO: Under Construction
-protection_buffer = StopOrderBuffer()
+protection_buffer = FullStopOrderBuffer()
 with timer(str(protection_buffer)):
     buffer = protection_buffer.create_buffer(strategy.holding)
 

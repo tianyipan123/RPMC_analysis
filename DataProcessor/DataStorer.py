@@ -20,7 +20,7 @@ class DataStorer:
     def __str__(self) -> str:
         """String representation of DataStorer.
         """
-        return "DataStorer is storing"
+        return "Storing Data"
 
     def store_buy(self, holding: pd.DataFrame) -> None:
         """Store holding by writer in Buying template format.

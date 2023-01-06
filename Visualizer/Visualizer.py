@@ -32,7 +32,7 @@ class Visualizer:
     def __str__(self) -> str:
         """String representation of Visualizer.
         """
-        return "Visualizer is working"
+        return "Visualizing Outcome"
 
     def fetch_holding(self) -> None:
         """Fetch the holding from self.url and store results in holding.
