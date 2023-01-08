@@ -43,7 +43,6 @@ class DataLoader:
     def _read_sptsx(self) -> None:
         """Read SPTSX data from tradable_path and store results in sptsx_df.
         """
-        # TODO: add a auto-check system to cope with non-trackable stocks
         # setup
         sptsx_df = pd.read_excel(self.tradable_path, sheet_name="SPTSX")
         header = sptsx_df.iloc[0]
@@ -72,7 +71,7 @@ class DataLoader:
             "SMF", "SMU.UT", "SNC", "SRU.UT", "TCL.A", "TECK.B", "TIH", "TOU",
             "TOY", "TSGI", "WCP", "WDO", "WFT", "WJA", "WN", "WPK",
             "WSP", "WTE", "YRI",
-            "MTL"  # this stock gives constnat stock price
+            "MTL"  # this stock gives constant stock price
         ]
         sptsx_df.drop(non_trackable, inplace=True)
         # drop unused information
