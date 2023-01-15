@@ -8,7 +8,6 @@ class ProtectionBuffer:
         """Initializer to ProtectionBuffer.
         """
         self.strategy = strategy
-        # TODO: might not need to specify the column
         self.buffer = pd.DataFrame()
         self.tolerance = tolerance
 

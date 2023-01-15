@@ -12,7 +12,7 @@ help further investigation. `DataStorer.py` stores the results from investigatio
 - `ProtectionBuffer` directory attempts to add protection to the strategy. In the
 directory, `ProtectionBuffer` provides the interface of such buffer, while
 `StopOrderBuffer.py` and `OptionBuffer.py` implements various financial
-instruments to achieve the goal (currently under construction).
+instruments to achieve the goal (finish stop order buffers).
 - `Strategy` directory stores the quantitative strategies towards stock trading.
 In the directory, `Strategy.py` provides the interface of such strategy, and
 `SharpeMaxStrategy.py` implements such framework and develop the stock
