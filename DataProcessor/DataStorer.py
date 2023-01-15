@@ -31,19 +31,16 @@ class DataStorer:
         basket["Buy/Sell"] = np.where(holding["amount"] > 0, "Buy", "Sell")
         basket["Quantity"] = holding["amount"].abs()
         basket["Type"] = "MKT"
+
+        # merge hold and buffer
+        basket = pd.concat([basket, buffer])
         # store results
         self._store_allocation(basket, "buy")
-        self._store_buffer(buffer)
 
     def store_hold(self, holding: pd.DataFrame) -> None:
         """Store holding by writer in more readable format.
         """
         self._store_allocation(holding, "holding")
-
-    def _store_buffer(self, buffer: pd.DataFrame) -> None:
-        # TODO: Must append to the excel
-        buffer.to_excel(self.writer, sheet_name="buy", index=False)
-        self.writer.save()
 
     def _store_allocation(self, allocation: pd.DataFrame, sheet) -> None:
         """A helper function for storage.
