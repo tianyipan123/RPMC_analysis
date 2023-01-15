@@ -11,7 +11,8 @@ def get_intra_stock(ticker: str, days: int) -> (pd.DataFrame, bool):
     """
     end_time = datetime.datetime.today()
     start_time = end_time - datetime.timedelta(days)
-    df = yf.download(ticker, start=start_time, end=end_time, interval="5m", progress=False)
+    df = yf.download(ticker, start=start_time, end=end_time, interval="5m",
+                     progress=False)
     if df.notnull().all().all():
         return df, True
     return df.dropna(), False
@@ -21,10 +22,11 @@ def get_daily_stock(ticker: str, days: int) -> (pd.DataFrame, bool):
     """Get daily data.
     Return the dataframe and whether if it contains NaN.
     """
-    # TODO: relax the condition of being a potential valid stock to choose
+    # TODO: can test effect on changes
     end_time = datetime.datetime.today()
     start_time = end_time - datetime.timedelta(days)
-    df = yf.download(ticker, start=start_time, end=end_time, interval="1d", progress=False)
+    df = yf.download(ticker, start=start_time, end=end_time, interval="1d",
+                     progress=False)
     if df.notnull().all().all():
         return df, True
     return df.dropna(), False
@@ -90,13 +92,17 @@ def get_tickers_spec(ticker_list: List[str], spec_type: str, days: int) -> \
     success_ticker = []
     for ticker in ticker_list:
         df, s = get_daily_stock(ticker, days)
-        if s:
+        if s or len(df.index) > days * 0.75:
             data_list.append(df[spec_type])
             success_ticker.append(ticker)
     total_df = pd.concat(data_list, axis=1)
     total_df = total_df.dropna()
     total_df.columns = success_ticker
     return total_df
+
+
+def get_current_price(ticker: str) -> float:
+    return get_intra_stock(ticker, 4)[0]["Adj Close"].iloc[-1]
 
 
 if __name__ == "__main__":

@@ -6,6 +6,7 @@ from DataProcessor.DataLoader import DataLoader
 from DataProcessor.DataStorer import DataStorer
 from Strategy.SharpeMaxStrategy import SharpeMaxStrategy
 from ProtectionBuffer.FullStopOrderBuffer import FullStopOrderBuffer
+from ProtectionBuffer.LadderStopOrderBuffer import LadderStopOrderBuffer
 from Visualizer.Visualizer import Visualizer
 
 
@@ -32,17 +33,18 @@ with timer(str(strategy)):
     strategy.develop_strategy()
 
 #%% Add Buffer
-# TODO: Under Construction
-protection_buffer = FullStopOrderBuffer()
-with timer(str(protection_buffer)):
-    buffer = protection_buffer.create_buffer(strategy.holding)
+buffer = FullStopOrderBuffer(strategy, 0.05)
+# buffer = LadderStopOrderBuffer(strategy, 0.1, 4, "geom")
+with timer(str(buffer)):
+    buffer.create_buffer()
+    buffer.remove_zero_buffer()
 
 #%% Store result
 holding_path = "holding.xlsx"
 writer = pd.ExcelWriter(holding_path)
 data_storer = DataStorer(writer)
 with timer(str(data_storer)):
-    data_storer.store_buy(strategy.holding)
+    data_storer.store_buy(strategy.holding, buffer.buffer)
     data_storer.store_hold(strategy.holding)
 
 #%% Visualize Result

@@ -22,7 +22,7 @@ class DataStorer:
         """
         return "Storing Data"
 
-    def store_buy(self, holding: pd.DataFrame) -> None:
+    def store_buy(self, holding: pd.DataFrame, buffer: pd.DataFrame) -> None:
         """Store holding by writer in Buying template format.
         """
         # Formulate Tradable basket in template
@@ -31,6 +31,9 @@ class DataStorer:
         basket["Buy/Sell"] = np.where(holding["amount"] > 0, "Buy", "Sell")
         basket["Quantity"] = holding["amount"].abs()
         basket["Type"] = "MKT"
+
+        # merge hold and buffer
+        basket = pd.concat([basket, buffer])
         # store results
         self._store_allocation(basket, "buy")
 

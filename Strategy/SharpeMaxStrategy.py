@@ -183,7 +183,6 @@ class SharpeMaxStrategy(Stt):
         for ind in tqdm(self.industry_list):
             print("current industry is " + ind)
             tickers = self.target[ind]
-            # TODO: unstable parameter self.selection_filter // 3
             stock_prices = se.get_tickers_spec(tickers, "Adj Close",
                                                self.selection_filter // 3)
             stock_prices = stock_prices[-self.optimization_filter:]
