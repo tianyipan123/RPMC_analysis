@@ -9,8 +9,7 @@ class ProtectionBuffer:
         """
         self.strategy = strategy
         # TODO: might not need to specify the column
-        self.buffer = pd.DataFrame(columns=["Ticker", "Buy/Sell", "Quantity",
-                                            "Type", "Price"])
+        self.buffer = pd.DataFrame()
         self.tolerance = tolerance
 
     def __str__(self) -> str:
@@ -20,3 +19,6 @@ class ProtectionBuffer:
 
     def create_buffer(self) -> None:
         raise NotImplementedError
+
+    def remove_zero_buffer(self) -> None:
+        self.buffer = self.buffer[self.buffer["Quantity"] != 0]

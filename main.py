@@ -33,11 +33,11 @@ with timer(str(strategy)):
     strategy.develop_strategy()
 
 #%% Add Buffer
-# TODO: Under Construction
 buffer = FullStopOrderBuffer(strategy, 0.05)
 # buffer = LadderStopOrderBuffer(strategy, 0.1, 4, "geom")
 with timer(str(buffer)):
     buffer.create_buffer()
+    buffer.remove_zero_buffer()
 
 #%% Store result
 holding_path = "holding.xlsx"

@@ -3,6 +3,7 @@ from Strategy.Strategy import Strategy
 import pandas as pd
 from Toolbox import stock_extraction as se
 import numpy as np
+from tqdm import tqdm
 
 
 class LadderStopOrderBuffer(PB):
@@ -17,11 +18,9 @@ class LadderStopOrderBuffer(PB):
     def __str__(self) -> str:
         """String representation of StopOrderBuffer.
         """
-        return f"Ladder Stop Order Buffer: layer = {self.layer}, " \
-               f"method = {self.method}"
+        return f"Ladder Stop Order Buffer: {self.layer} {self.method}"
 
     def create_buffer(self) -> None:
-        # TODO: change to switch case
         if self.method == "equal":
             self._equal_buffer()
         elif self.method == "geom":
@@ -31,9 +30,10 @@ class LadderStopOrderBuffer(PB):
 
     def _equal_buffer(self) -> None:
         holding = self.strategy.holding
+        holding = holding.set_index("ticker")
         buffer_list = []
 
-        for ticker in holding["ticker"]:
+        for ticker in tqdm(holding.index):
             amount = holding.loc[ticker, "amount"]
             # if the holding is a buy signal, sign is 1
             amount, sign = round(abs(amount) / self.layer),\
@@ -42,39 +42,39 @@ class LadderStopOrderBuffer(PB):
             # build each layer
             for i in range(1, self.layer + 1):
                 buffer_list.append(
-                    self.__single_buffer(i, ticker, str(sign), amount,
-                                         holding.loc[ticker, "location"])
+                    self._single_buffer(i, ticker, str(sign), amount,
+                                        holding.loc[ticker, "location"])
                 )
         self.buffer = pd.concat(buffer_list)
 
     def _geometric_half_buffer(self):
         holding = self.strategy.holding
+        holding = holding.set_index("ticker")
         buffer_list = []
 
-        for ticker in holding["ticker"]:
+        for ticker in tqdm(holding.index):
             amount = holding.loc[ticker, "amount"]
+            amount, sign = abs(amount), np.where(amount > 0, "Sell", "Buy")
             # build each layer
             for i in range(1, self.layer + 1):
-                amount, sign = round(abs(amount) / (2 ** i)), \
-                    np.where(amount > 0, "Sell", "Buy")
-                if i == self.layer:
-                    amount = round(abs(amount) / (2 ** self.layer))
+                if i < self.layer:
+                    amount = round(abs(amount) / 2)
                 # append result
                 buffer_list.append(
-                    self.__single_buffer(i, ticker, str(sign), amount,
-                                         holding.loc[ticker, "location"])
+                    self._single_buffer(i, ticker, str(sign), amount,
+                                        holding.loc[ticker, "location"])
                 )
         # store result
         self.buffer = pd.concat(buffer_list)
 
-    def __single_buffer(self, i: int, ticker: str, sign: str, amount: int,
-                        location: str) -> pd.DataFrame:
+    def _single_buffer(self, i: int, ticker: str, sign: str, amount: int,
+                       location: str) -> pd.DataFrame:
         ratio = 1 - (self.tolerance * i / self.layer)
         price = se.get_current_price(ticker)
         return pd.DataFrame(
-                {"Ticker": ticker + location,
+                {"Ticker": [ticker + "-" + location],
                  "Buy/Sell": sign,
-                 "Quantity": amount,
-                 "Type": "STOP",
-                 "Price": price * ratio
+                 "Quantity": [amount],
+                 "Type": ["STOP"],
+                 "Price": [price * ratio]
                  })
