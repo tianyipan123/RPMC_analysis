@@ -21,6 +21,8 @@ class LadderStopOrderBuffer(PB):
         return f"Ladder Stop Order Buffer: {self.layer} {self.method}"
 
     def create_buffer(self) -> None:
+        """Inherited method from ProtectionBuffer.
+        """
         if self.method == "equal":
             self._equal_buffer()
         elif self.method == "geom":
@@ -29,6 +31,9 @@ class LadderStopOrderBuffer(PB):
             print("No such method; please use other available options.")
 
     def _equal_buffer(self) -> None:
+        """Equally split the buffer into self.layer layers, with arithmetic
+        progressive tolerance rate.
+        """
         holding = self.strategy.holding
         holding = holding.set_index("ticker")
         buffer_list = []
@@ -48,6 +53,9 @@ class LadderStopOrderBuffer(PB):
         self.buffer = pd.concat(buffer_list)
 
     def _geometric_half_buffer(self):
+        """Split the buffer in geometric progressive amount with factor 0.5,
+        with arithmetic progressive tolerance rate.
+        """
         holding = self.strategy.holding
         holding = holding.set_index("ticker")
         buffer_list = []
@@ -69,6 +77,8 @@ class LadderStopOrderBuffer(PB):
 
     def _single_buffer(self, i: int, ticker: str, sign: str, amount: int,
                        location: str) -> pd.DataFrame:
+        """Return the inputs into desired form of DataFrame.
+        """
         ratio = 1 - (self.tolerance * i / self.layer)
         price = se.get_current_price(ticker)
         return pd.DataFrame(

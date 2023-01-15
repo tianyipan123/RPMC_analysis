@@ -7,6 +7,8 @@ from tqdm import tqdm
 
 
 class FullStopOrderBuffer(PB):
+    """A ProtectionBuffer that full insures the holding
+    """
 
     def __init__(self, strategy: Strategy, tolerance: float) -> None:
         """Initializer to StopOrderBuffer.
@@ -19,6 +21,8 @@ class FullStopOrderBuffer(PB):
         return "Stop Order Buffer"
 
     def create_buffer(self) -> None:
+        """Inherited method from ProtectionBuffer.
+        """
         holding = self.strategy.holding
         holding = holding.set_index("ticker")
         buffer_list = []
