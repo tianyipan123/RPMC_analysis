@@ -11,7 +11,8 @@ def get_intra_stock(ticker: str, days: int) -> (pd.DataFrame, bool):
     """
     end_time = datetime.datetime.today()
     start_time = end_time - datetime.timedelta(days)
-    df = yf.download(ticker, start=start_time, end=end_time, interval="5m", progress=False)
+    df = yf.download(ticker, start=start_time, end=end_time, interval="5m",
+                     progress=False)
     if df.notnull().all().all():
         return df, True
     return df.dropna(), False
@@ -101,8 +102,7 @@ def get_tickers_spec(ticker_list: List[str], spec_type: str, days: int) -> \
 
 
 def get_current_price(ticker: str) -> float:
-    # TODO: not has been tested
-    return get_intra_stock(ticker, 2)[0].iloc[-1, "Adj Close"]
+    return get_intra_stock(ticker, 4)[0]["Adj Close"].iloc[-1]
 
 
 if __name__ == "__main__":
