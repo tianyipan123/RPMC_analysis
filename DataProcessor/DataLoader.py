@@ -71,7 +71,8 @@ class DataLoader:
             "SMF", "SMU.UT", "SNC", "SRU.UT", "TCL.A", "TECK.B", "TIH", "TOU",
             "TOY", "TSGI", "WCP", "WDO", "WFT", "WJA", "WN", "WPK",
             "WSP", "WTE", "YRI",
-            "MTL"  # this stock gives constant stock price
+            "MTL",  # this stock gives constant stock price
+            "IAG" # point to another not listed stock
         ]
         sptsx_df.drop(non_trackable, inplace=True)
         # drop unused information
