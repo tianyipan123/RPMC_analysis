@@ -70,7 +70,7 @@ class DataLoader:
             "PXT", "QBR.B", "RCH", "RCI.B", "REI.UT", "RUS", "SIA", "SJR.B",
             "SMF", "SMU.UT", "SNC", "SRU.UT", "TCL.A", "TECK.B", "TIH", "TOU",
             "TOY", "TSGI", "WCP", "WDO", "WFT", "WJA", "WN", "WPK",
-            "WSP", "WTE", "YRI", "SJ"
+            "WSP", "WTE", "YRI", "SJ",
             "MTL", "IAG"  # this stock gives constant stock price
         ]
         sptsx_df.drop(non_trackable, inplace=True)
@@ -98,7 +98,7 @@ class DataLoader:
             "LB", "MXIM", "MYL", "NBL", "PBCT", "RTN", "STI", "SYMC",
             "TIF", "UTX", "VAR", "VIAB", "WCG", "WLTW", "XEC", "XLNX",
             "T",  # T in yfinance seems to represent Telus rather than AT&T
-            "NLSN", "TWTR", "CTXS", "DRE"  # no lastest data available
+            "NLSN", "TWTR", "CTXS", "DRE", "ABMD"  # no lastest data available
         ]
         spx_df.drop(non_trackable, inplace=True)
 
