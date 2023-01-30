@@ -20,7 +20,7 @@ def timer(name: str) -> None:
 
 
 #%% Preparation
-money = 700000
+money = 900000
 dataloader = DataLoader()
 
 with timer(str(dataloader)):
@@ -33,8 +33,8 @@ with timer(str(strategy)):
     strategy.develop_strategy()
 
 #%% Add Buffer
-buffer = FullStopOrderBuffer(strategy, 0.05)
-# buffer = LadderStopOrderBuffer(strategy, 0.1, 4, "geom")
+# buffer = FullStopOrderBuffer(strategy, 0.05)
+buffer = LadderStopOrderBuffer(strategy, 0.08, 4, "geom")
 with timer(str(buffer)):
     buffer.create_buffer()
     buffer.remove_zero_buffer()
