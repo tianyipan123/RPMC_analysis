@@ -20,7 +20,7 @@ def timer(name: str) -> None:
 
 
 #%% Preparation
-money = 1300000
+money = 1200000
 dataloader = DataLoader()
 
 with timer(str(dataloader)):
@@ -28,7 +28,7 @@ with timer(str(dataloader)):
     dataloader.count_industry()
 
 #%% Develop Strategy
-strategy = SharpeMaxStrategy(dataloader, money, 100, 100, 20)
+strategy = SharpeMaxStrategy(dataloader, money, 100, 80, 20)
 with timer(str(strategy)):
     strategy.develop_strategy()
 

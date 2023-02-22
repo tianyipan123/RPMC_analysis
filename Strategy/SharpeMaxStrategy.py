@@ -114,7 +114,11 @@ class SharpeMaxStrategy(Stt):
             target_list = []
             for ticker in tickers_list:
                 stock_price, success = se.get_daily_stock(ticker, sel_filter)
-                sharpe = kpi.sharpe(stock_price)
+                try:
+                    sharpe = kpi.sharpe(stock_price)
+                except IndexError:
+                    print(ticker)
+                    continue
                 if kpi.volatility(stock_price) == 0:
                     print(ticker)
                 if sharpe > 0 and success:
